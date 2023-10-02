@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
 
-export const MainHeader: React.FC<{}> = () => {
+export const MainHeader: React.FC<object> = () => {
   const { isLoggedIn, logOut } = useContext(AuthContext);
   return (
     <header>

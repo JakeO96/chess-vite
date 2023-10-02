@@ -2,10 +2,10 @@ import { createContext, useState, ReactNode, useEffect, useContext } from 'react
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
-import { JsonObject } from 'react-use-websocket/dist/lib/types';
 import { AuthContext } from './AuthContext';
 
-export interface StartGameMessageObject extends JsonObject {
+export interface StartGameMessageObject {
+  initiatingUser: Player;
   type: string;
   accepted?: boolean;
   challenger: string;
@@ -31,6 +31,7 @@ type GameContextType = {
   setOpponent: React.Dispatch<React.SetStateAction<Player | undefined>>;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   sendMessage: (message: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastMessage: MessageEvent<any> | null;
   readyState: ReadyState;
   initiatePlayers: (challengerUsername: string, opponentUsername: string) => Player[];
@@ -78,8 +79,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [socketUrl, setSocketUrl] = useState<string>('');
 
   const initiatePlayers = (challengerUsername: string, opponentUsername: string): Player[] =>  {
-    let player1 = new Player(challengerUsername, '', [], []);
-    let player2 = new Player(opponentUsername, '', [], []);
+    const player1 = new Player(challengerUsername, '', [], []);
+    const player2 = new Player(opponentUsername, '', [], []);
     const r = Math.floor(Math.random() * 2);
     if (r === 0) {
       player1.color = 'white';
@@ -107,6 +108,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     readyState
   } = useWebSocket<StartGameMessageObject>(socketUrl, {
     onOpen: () => console.log('opened'),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     shouldReconnect: (closeEvent) => true,
   }, socketUrl !== '');
 

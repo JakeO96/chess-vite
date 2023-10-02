@@ -80,7 +80,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
             styles: "input[type='text']",
             onChange: onInputChange,
             value: fields.username,
-            validate: (_: string) => undefined,
+            validate: () => undefined,
             serverFunction: expressApi.fieldExistsInDB,
             required: true,
           },
@@ -91,7 +91,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
             styles: "input[type='password']",
             onChange: onInputChange,
             value: fields.password,
-            validate: (_: string) => undefined,
+            validate: () => undefined,
             required: true,
           },
         ].map((attrs) => (

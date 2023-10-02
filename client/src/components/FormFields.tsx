@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
+type PlainFormFieldOnChange = (obj: { name: string, value: string }) => void;
+type ValidateFormFieldOnChange = (obj: { name: string, value: string, error: string | undefined }) => void;
+
 type PlainFormFieldProps = {
   placeholder?: string;
   name: string;
   type: string;
   value: string;
-  onChange: (obj: {name: string, value: string }) => void;
+  onChange: PlainFormFieldOnChange
   styles: string;
   required: boolean;
 };
 
-interface RecordCheckResponse extends Response {
+export interface RecordCheckResponse extends Response {
   exists: boolean;
 }
 
@@ -50,7 +53,7 @@ type ValidateFormFieldProps = {
   type: string;
   value: string;
   validate: (value: string) => string | undefined;
-  onChange: (obj: {name: string, value: string, error: string | undefined}) => void;
+  onChange: ValidateFormFieldOnChange
   styles: string;
   required: boolean;
 };
@@ -96,7 +99,7 @@ type ServerConnectedFormFieldProps = {
   validate: (value: string) => string | undefined;
   onChange: (obj: {name: string, value: string, error: string | undefined}) => void;
   styles: string;
-  serverFunction: Function;
+  serverFunction: (fieldName: string, value: string) => Promise<RecordCheckResponse>;
   required: boolean;
 };
 
@@ -137,9 +140,9 @@ const ServerConnectedFormField: React.FC<ServerConnectedFormFieldProps> = ({
 
 const useFormField = (
   propsValue: string,
-  onChange: Function,
-  validate?: Function,
-  serverFunction?: Function
+  onChange: PlainFormFieldOnChange | ValidateFormFieldOnChange,
+  validate?: (arg: string) => string | undefined,
+  serverFunction?: (fieldName: string, value: string) => Promise<RecordCheckResponse>
 ) => {
   const [value, setValue] = useState(propsValue);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -150,7 +153,7 @@ const useFormField = (
 
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const value = evt.target.value;
-    let error = validate ? validate(value) : undefined;
+    const error = validate ? validate(value) : undefined;
 
     setValue(value);
     setError(error);
@@ -168,8 +171,7 @@ const useFormField = (
       return;
     }
     await serverFunction(name, value)
-      .then(async (res: RecordCheckResponse) => {
-        const data = await res.json();
+      .then(async (data: RecordCheckResponse) => {
         if (data.exists) {
           setValue(value);
           error = `${name} already in use`;

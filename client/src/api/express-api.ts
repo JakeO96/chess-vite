@@ -1,3 +1,4 @@
+import type { RecordCheckResponse } from "../components/FormFields";
 const SERVER_API_URL= 'http://localhost:3001/api'
 
 enum fetchMethods {
@@ -34,16 +35,23 @@ export default class ExpressAPI {
   }
 
   // Get all users currently logged in
-  getLoggedInUsers = async (): Promise<unknown> => {
+  getLoggedInUsers = async (): Promise<Response> => {
     const response = await this.makeApiCall(fetchMethods.GET, '/user/logged-in');
     return response;
   }
 
   // Check to see if a form fields, value already a value in an existing User document in the DB. 
-  fieldExistsInDB = async (fieldName: string, value: never): Promise<Response> => {
-    const response = await this.makeApiCall(fetchMethods.GET,`/user/exists/${fieldName}/${value}`);
-    return response;
+  fieldExistsInDB = async (fieldName: string, value: string): Promise<RecordCheckResponse> => {
+    const response: Response = await this.makeApiCall(fetchMethods.GET,`/user/exists/${fieldName}/${value}`);
+    if (response.ok) {
+      const data: RecordCheckResponse = await response.json();
+      return data;
+    } else {
+      // Handle error appropriately
+      throw new Error('Server returned an error response');
+    }
   }
+  
 
   // Create a new Game of chess
   createGame = async (data: object, callback: (gameId: string) => void): Promise<Response> => {

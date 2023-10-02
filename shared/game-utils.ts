@@ -1,10 +1,4 @@
-export interface Player {
-  name: string;
-  color: string;
-  alive: Piece[];
-  grave: Piece[];
-}
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const grid: string[][] = [
   ['A7', 'A6', 'A5', 'A4', 'A3', 'A2', 'A1', 'A0'],
   ['B7', 'B6', 'B5', 'B4', 'B3', 'B2', 'B1', 'B0'],
@@ -39,6 +33,7 @@ export class Player {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static fromJSON(json: any) {
     const player = new Player();
     player.name = json.name;
@@ -107,7 +102,7 @@ export class Piece {
     if (looper === end) {
         return all_moves;
     }
-    let spot: string = axis === 'vert' ? grid[anchor][looper] : grid[looper][anchor];
+    const spot: string = axis === 'vert' ? grid[anchor][looper] : grid[looper][anchor];
     if (state[spot][0] === null) {
         all_moves.push(spot);
         if (end === 8) {
@@ -127,7 +122,7 @@ export class Piece {
     if (col_rec === 8 || col_rec === (-1) || row_rec === 8 || row_rec === (-1)) {
         return all_moves;
     }
-    let spot: string = grid[col_rec][row_rec];
+    const spot: string = grid[col_rec][row_rec];
     if (state[spot][0] === null) {
         all_moves.push(spot);
         if (axis === 'f-slash' && end === 8) {
@@ -150,7 +145,7 @@ export class Piece {
 
 export class Pawn extends Piece {
   validPawnMoves(grid: string[][], state: any, col: number, row: number): string[] {
-    let all_moves: string[] = [];
+    const all_moves: string[] = [];
     // Check the color of the pawn to decide which direction it should move
     let nextRow = this.isWhite ? row - 1 : row + 1;
 
@@ -159,8 +154,8 @@ export class Pawn extends Piece {
     }
     
     if ((col-1) >= 0 && (col+1) <= 7) {
-      let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
-      for (let coord of attacks) {
+      const attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
+      for (const coord of attacks) {
         const spotPiece = state[coord][0];
         if (spotPiece === null) {
             continue;
@@ -285,7 +280,7 @@ export const assignWhitePieces = (player: Player): void => {
   const playerName = player.name;
   const playerColor = player.color;
   const pieceFactory = new PieceFactory();
-  for (let col of grid) {
+  for (const col of grid) {
     player.alive.push(pieceFactory.createPiece('Pawn', 'wPawn', col[6], false, playerName, playerColor, true));
   }
   player.alive.push(
@@ -304,7 +299,7 @@ export const assignBlackPieces = (player: Player): void => {
   const playerName = player.name;
   const playerColor = player.color;
   const pieceFactory = new PieceFactory();
-  for (let col of grid) {
+  for (const col of grid) {
       player.alive.push(pieceFactory.createPiece('Pawn', 'bPawn', col[1], false, playerName, playerColor, false));
   }
   player.alive.push(

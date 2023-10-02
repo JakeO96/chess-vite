@@ -20,7 +20,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
-      .then((res) =>  res.json() )
+      .then((res: Response) =>  res.json() )
       .then((data) => {
         setUsers(data);
         setIsLoading(false);

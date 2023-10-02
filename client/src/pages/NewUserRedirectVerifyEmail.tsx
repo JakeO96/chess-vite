@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 
-export const NewUserRedirectToLogin: React.FC<{}> = () => {
+export const NewUserRedirectToLogin: React.FC<object> = () => {
   const [counter, setCounter] = useState(20);
 
   useEffect(() => {

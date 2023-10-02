@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import MainLayout from "../components/MainLayout";
 import ExpressAPI from "../api/express-api";
 import { StartGamePortal } from "../components/StartGamePortal";
