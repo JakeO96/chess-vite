@@ -35,7 +35,7 @@ interface ActiveGames {
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
 
 app.use(cors({ origin: clientUrl, credentials: true }));
 app.use(express.json());
