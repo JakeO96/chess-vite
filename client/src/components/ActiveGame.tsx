@@ -357,7 +357,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
   const [, dropRef] = useDrop({
     accept: 'piece',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    drop: (item: any, monitor) => {
+    drop: (item: any) => {
       if (item) {
         const start = item.piece.position; 
         const end = position;
@@ -397,7 +397,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
 
 const DraggablePiece: React.FC<{ piece: Piece }> = ({ piece }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [{ isDragging }, dragRef] = useDrag({
+  const [, dragRef] = useDrag({
     type: 'piece',
     item: { type: 'piece', piece },
     collect: monitor => ({

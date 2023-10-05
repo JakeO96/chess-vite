@@ -108,8 +108,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     readyState
   } = useWebSocket<StartGameMessageObject>(socketUrl, {
     onOpen: () => console.log('opened'),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    shouldReconnect: (closeEvent) => true,
+    shouldReconnect: () => true,
   }, socketUrl !== '');
 
   return (
