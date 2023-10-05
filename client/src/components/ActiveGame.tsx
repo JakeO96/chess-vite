@@ -144,7 +144,7 @@ export const ActiveGame: React.FC<object> = () => {
     gameState.moves.forEach((move, index, arr) => {
       if (index % 2 === 0) {
         currentColumn.push(
-          <div className='flex justify-start p-0 m-0' key={index / 2}>
+          <div className='flex justify-start p-0 m-0 max-w-full' key={index / 2}>
             <p className='text-noct-black'> { Math.floor(index / 2) + 1}.{' '} </p>
             <p className='text-noct-blue'>{ move }</p>
             {index < arr.length - 1 ? <p className='text-noct-blue'>,{' '}</p> : ''}
@@ -170,10 +170,10 @@ export const ActiveGame: React.FC<object> = () => {
     if (challenger && opponent) {
       return (
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 flex space-x-2 flex-wrap bg-graveyard mb-40 ml-14">
+          <div className="flex-1 flex space-x-2 flex-wrap bg-noct-black mb-40">
             {challenger.color === 'white' ? challenger.grave.map(renderWhiteGravePiece) : opponent.grave.map(renderWhiteGravePiece)}
           </div>
-          <div className="flex-1 flex space-x-2 flex-wrap bg-graveyard mt-40 ml-14">
+          <div className="flex-1 flex space-x-2 flex-wrap bg-noct-black mt-40">
             {challenger.color === 'black' ? challenger.grave.map(renderBlackGravePiece) : opponent.grave.map(renderBlackGravePiece)}
           </div>
         </div>
@@ -189,22 +189,20 @@ export const ActiveGame: React.FC<object> = () => {
       {displayBlackPlayerName()}
     </div>
 
-    <div className="flex">
-
-      <div className='flex-1 flex flex-wrap justify-start'>
-        <div className='flex-1 flex flex-wrap justify-start overflow-y-auto h-[500px] ml-4 mr-14'> {/* Adjust the height as needed */}
-          <div className='flex space-x-4'> {/* Container for columns */}
-            {
-              gameState ? displayMoves(gameState) : null
-            }
+    <div className="flex items-stretch justify-between">
+      <div className="flex-1 flex flex-wrap">
+        <div className="flex-1 flex flex-wrap overflow-y-auto h-[500px] ml-4 mr-14">
+          <div className="flex space-x-4">
+            { gameState ? displayMoves(gameState) : null }
           </div>
         </div>
       </div>
 
-      <ChessBoard />
+      <div className="flex-1">
+        <ChessBoard />
+      </div>
 
-      {displayGraveyards()}
-
+      { displayGraveyards() }
     </div>
 
     <div className='flex justify-center mt-2'>
@@ -233,7 +231,7 @@ const ChessBoard: React.FC<object> = () => {
           );
         }
       }
-      chessBoard.push(<div key={row_num} className="w-screen flex items-center justify-center">{row}</div>);
+      chessBoard.push(<div key={row_num} className="flex items-center">{row}</div>);
     }
     return chessBoard
   }
