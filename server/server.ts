@@ -35,9 +35,22 @@ interface ActiveGames {
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+const devClientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+const prodClientUrl = process.env.PROD_CLIENT_URL || 'http://games.cynkronic.com'
+const wwwProdClientUrl = process.env.WWW_PROD_CLIENT_URL || 'http://www.games.cynkronic.com'
 
-app.use(cors({ origin: clientUrl, credentials: true }));
+const allowedOrigins = [devClientUrl, prodClientUrl, wwwProdClientUrl];
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true 
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(cookieParser());
