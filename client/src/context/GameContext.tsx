@@ -98,7 +98,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   
   useEffect(() => {
     if (isLoggedIn) {
-      setSocketUrl('ws://localhost:3001');
+      setSocketUrl('ws://games.cynkronic.com');
     }
   }, [isLoggedIn]);
 
