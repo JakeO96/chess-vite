@@ -4,6 +4,9 @@ import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-util
 import { Piece, grid } from '../utils/game-utils';
 import { AuthContext } from './AuthContext';
 
+const PROD_WS_URL = 'wss://games.cynkronic.com'
+//const DEV_WS_URL = 'ws://localhost:3001'
+
 export interface StartGameMessageObject {
   initiatingUser: Player;
   type: string;
@@ -98,7 +101,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   
   useEffect(() => {
     if (isLoggedIn) {
-      setSocketUrl('ws://games.cynkronic.com');
+      setSocketUrl(PROD_WS_URL);
     }
   }, [isLoggedIn]);
 

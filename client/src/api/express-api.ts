@@ -52,6 +52,7 @@ export default class ExpressAPI {
     }
   }
   
+
   // Create a new Game of chess
   createGame = async (data: object, callback: (gameId: string) => void): Promise<Response> => {
     const response = await this.makeApiCall(fetchMethods.POST, '/game/create-game', data);

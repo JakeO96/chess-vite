@@ -32,16 +32,12 @@ interface ActiveGames {
   [key: string]: Player[];
 }
 
-console.log("DATABASE_URL:", process.env.DB_CONNECTION_STRING);
-
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
 const devClientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
 const prodClientUrl = process.env.PROD_CLIENT_URL || 'http://games.cynkronic.com'
 const wwwProdClientUrl = process.env.WWW_PROD_CLIENT_URL || 'http://www.games.cynkronic.com'
-
-console.log(`prodclient: ${prodClientUrl}`);
 
 const allowedOrigins = [devClientUrl, prodClientUrl, wwwProdClientUrl];
 app.use(cors({
