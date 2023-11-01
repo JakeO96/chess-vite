@@ -36,8 +36,8 @@ connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
 const devClientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
-const prodClientUrl = process.env.PROD_CLIENT_URL || 'http://games.cynkronic.com'
-const wwwProdClientUrl = process.env.WWW_PROD_CLIENT_URL || 'http://www.games.cynkronic.com'
+const prodClientUrl = process.env.PROD_CLIENT_URL || 'https://games.cynkronic.com'
+const wwwProdClientUrl = process.env.WWW_PROD_CLIENT_URL || 'https://www.games.cynkronic.com'
 
 const allowedOrigins = [devClientUrl, prodClientUrl, wwwProdClientUrl];
 app.use(cors({
@@ -102,6 +102,17 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
   }
 
   ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
+
+  server.on('upgrade', (request, socket, head) => {
+    // You can put your path check here
+    if (request.url === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
 
   ws.on('message', (message) => {
     const messageStr = typeof message === 'string' ? message : message.toString();

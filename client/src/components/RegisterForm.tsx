@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { ValidateFormField, ServerConnectedFormField } from './FormFields';
 import { AuthContext } from '../context/AuthContext';
+import { withFormFieldDisplayWrapper } from './withFormFieldDisplayWrapper';
 import ExpressAPI from '../api/express-api';
 
 type Fields = {
@@ -24,6 +25,10 @@ type InputObject = {
 interface RegisterFormProps {
   expressApi: ExpressAPI;
 }
+
+
+const WrappedApiCallFormField = withFormFieldDisplayWrapper(ServerConnectedFormField)
+const WrappedVailidateFormField = withFormFieldDisplayWrapper(ValidateFormField)
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
   const [fields, setFields] = useState<Fields>({ username: '', password: '', email: '' });
@@ -60,70 +65,38 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
         Create A New Account
       </h2>
       <form onSubmit={onFormSubmit}>
-      { 
-        [
-          {
-            type: "text", 
-            name: "email",
-            placeholder: "E-mail address",
-            styles: "input[type='email']",
-            onChange: onInputChange,
-            value: fields.email,
-            validate: (val: string) => isEmail(val) ? undefined : "Enter an e-mail address",
-            serverFunction: expressApi.fieldExistsInDB,
-            required: true,
-          },
-          {
-            type: "text", 
-            name: "username",
-            placeholder: "Username",
-            styles: "input[type='text']",
-            onChange: onInputChange,
-            value: fields.username,
-            validate: () => undefined,
-            serverFunction: expressApi.fieldExistsInDB,
-            required: true,
-          },
-          {
-            type: "password",
-            name: "password",
-            placeholder: "Password",
-            styles: "input[type='password']",
-            onChange: onInputChange,
-            value: fields.password,
-            validate: () => undefined,
-            required: true,
-          },
-        ].map((attrs) => (
-            attrs.serverFunction ? 
-              <div key={attrs.name} className="p-1 flex justify-center w-full col-full border-0 px-0">
-                <ServerConnectedFormField 
-                  type={attrs.type} 
-                  name={attrs.name} 
-                  placeholder={attrs.placeholder} 
-                  styles={attrs.styles.concat(' w-full')}
-                  onChange={attrs.onChange }
-                  value={attrs.value}
-                  validate={attrs.validate}
-                  serverFunction={attrs.serverFunction}
-                  required={attrs.required}
-                />
-              </div> 
-            :
-              <div key={attrs.name} className="p-1 flex justify-center w-full col-full border-0 px-0">
-                <ValidateFormField 
-                  type={attrs.type} 
-                  name={attrs.name} 
-                  placeholder={attrs.placeholder} 
-                  styles={attrs.styles.concat(' w-full')}
-                  onChange={attrs.onChange }
-                  value={attrs.value}
-                  validate={attrs.validate}
-                  required={attrs.required}
-                />
-              </div>
-          ))
-      }
+        <WrappedApiCallFormField 
+          type={'text'} 
+          name={'email'} 
+          placeholder={'E-mail address'} 
+          styles={"input[type='email'] w-full"}
+          onChange={onInputChange}
+          value={fields.email}
+          validate={(val: string) => isEmail(val) ? undefined : "Enter an e-mail address"}
+          serverFunction={expressApi.fieldExistsInDB}
+          required={true}
+        />
+        <WrappedApiCallFormField 
+          type={'text'} 
+          name={'username'} 
+          placeholder={'Username'} 
+          styles={"input[type='text'] w-full"}
+          onChange={onInputChange}
+          value={fields.username}
+          validate={() => undefined}
+          serverFunction={expressApi.fieldExistsInDB}
+          required={true}
+        />
+        <WrappedVailidateFormField
+          type={'password'} 
+          name={'password'} 
+          placeholder={'Password'} 
+          styles={"input[type='password'] w-full"}
+          onChange={onInputChange}
+          value={fields.password}
+          validate={() => undefined} //TODO: add password validation
+          required={true}
+        />
       {
         (missingRequiredFields()) ?
           <div className="w-full flex justify-center">
@@ -165,13 +138,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
           ),
         }[_saveStatus]
       }
-      <div className="pt-1 text-noct-white">
-        Already have an account?
-        <Link to='/login' className='transition-all ml-3 underline text-noct-teal hover:no-underline hover:text-noct-gray'>
-          Go to Log In
-        </Link>
-      </div>
+        <div className="pt-1 text-noct-white">
+          Already have an account?
+          <Link to='/login' className='transition-all ml-3 underline text-noct-teal hover:no-underline hover:text-noct-gray'>
+            Go to Log In
+          </Link>
+        </div>
       </form>
     </div>
   );
 };
+

@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom'
 import isEmail from 'validator/lib/isEmail';
 import { AuthContext } from '../context/AuthContext';
-import { ValidateFormField } from './FormFields';
+import { ValidateFormField, PlainFormField } from './FormFields';
+import { withFormFieldDisplayWrapper } from './withFormFieldDisplayWrapper';
 
 type Field = {
   email: string;
@@ -18,6 +19,9 @@ type InputObject = {
   value: string,
   error?: string,
 }
+
+const WrappedValidateFormField = withFormFieldDisplayWrapper(ValidateFormField)
+const WrappedPlainFormField = withFormFieldDisplayWrapper(PlainFormField)
 
 export const LogInForm: React.FC<object> = () => {
   const [fields, setFields] = useState<Field>({ email: '', password: '' });
@@ -53,41 +57,25 @@ export const LogInForm: React.FC<object> = () => {
         Log In
       </h2>
       <form onSubmit={onFormSubmit} >
-        { 
-          [
-            {
-              type: "text",
-              name: "email",
-              placeholder: "E-mail address",
-              styles: "input[type='email']",
-              onChange: onInputChange,
-              value: fields.email,
-              validate: (val: string) => isEmail(val) ? undefined : "Enter an e-mail address",
-            },
-            {
-              type: "password",
-              name: "password",
-              placeholder: "Password",
-              styles: "input[type='password']",
-              onChange: onInputChange,
-              value: fields.password,
-              validate: () => undefined, // TODO add password validation
-            }
-          ].map((attrs) => (
-            <div key={attrs.name} className="p-1 flex justify-center w-full col-full border-0 px-0">
-              <ValidateFormField 
-                type={attrs.type} 
-                name={attrs.name} 
-                placeholder={attrs.placeholder} 
-                styles={attrs.styles.concat(' w-full')}
-                onChange={attrs.onChange }
-                value={attrs.value}
-                validate={attrs.validate}
-                required={false}
-              />
-            </div>
-          ))
-        }
+        <WrappedValidateFormField
+          type={'text'} 
+          name={'email'} 
+          placeholder={'E-mail address'} 
+          styles={"input[type='email'] w-full"}
+          onChange={onInputChange}
+          value={fields.email}
+          validate={(val: string) => isEmail(val) ? undefined : "Enter an e-mail address"}
+          required={true}
+        />
+        <WrappedPlainFormField
+          type={'text'} 
+          name={'password'} 
+          placeholder={'Password'} 
+          styles={"input[type='password'] w-full"}
+          onChange={onInputChange}
+          value={fields.password}
+          required={true}
+        />
         {
           missingRequiredFields() ?
             <div className="w-full flex justify-center">
