@@ -4,8 +4,8 @@ import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-util
 import { Piece, grid } from '../utils/game-utils';
 import { AuthContext } from './AuthContext';
 
-const PROD_WS_URL = 'wss://games.cynkronic.com'
-//const DEV_WS_URL = 'ws://localhost:3001'
+//const PROD_WS_URL = 'wss://games.cynkronic.com/ws'
+const DEV_WS_URL = 'ws://localhost:3001'
 
 export interface StartGameMessageObject {
   initiatingUser: Player;
@@ -34,7 +34,6 @@ type GameContextType = {
   setOpponent: React.Dispatch<React.SetStateAction<Player | undefined>>;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   sendMessage: (message: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastMessage: MessageEvent<any> | null;
   readyState: ReadyState;
   initiatePlayers: (challengerUsername: string, opponentUsername: string) => Player[];
@@ -101,7 +100,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   
   useEffect(() => {
     if (isLoggedIn) {
-      setSocketUrl(PROD_WS_URL);
+      setSocketUrl(DEV_WS_URL);
     }
   }, [isLoggedIn]);
 

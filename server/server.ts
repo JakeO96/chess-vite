@@ -103,17 +103,6 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
 
   ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
 
-  server.on('upgrade', (request, socket, head) => {
-    // You can put your path check here
-    if (request.url === '/ws') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
-    } else {
-      socket.destroy();
-    }
-  });
-
   ws.on('message', (message) => {
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
