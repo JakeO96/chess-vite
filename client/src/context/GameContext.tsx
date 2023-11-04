@@ -100,6 +100,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   
   useEffect(() => {
     if (isLoggedIn) {
+      console.log('the useEffect to set socketUrl firing')
       setSocketUrl(DEV_WS_URL);
     }
   }, [isLoggedIn]);
