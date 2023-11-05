@@ -19,6 +19,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const { challenger, opponent, gameId, setGameId, setChallenger, setOpponent, sendMessage, lastMessage, readyState, initiatePlayers } = useContext(GameContext)
 
   useEffect(() => {
+    console.log('getLoggedInUsers firing in StartGamePortal')
     expressApi.getLoggedInUsers()
       .then((res: Response) =>  res.json() )
       .then((data) => {
