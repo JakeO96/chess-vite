@@ -110,6 +110,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   
   // Get the user from the database
   const user = await User.findOne({ 'refreshTokens': token });
+  console.log(`in authCOntroller logout function the user fetched from DB is ${user}`)
 
   if(user) {
     // Add the token to the invalidatedTokens array in the database

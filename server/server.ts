@@ -4,7 +4,6 @@ import {gameRouter as gameRoutes} from './routes/gameRoutes';
 import { errorHandler } from "./middleware/errorHandler"
 import { connectDb } from "./config/dbConnection"
 import express from "express"
-import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import WebSocket from 'ws';
@@ -52,7 +51,6 @@ app.use(cors({
   credentials: true 
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
@@ -93,17 +91,21 @@ const wss = new WebSocket.Server({
 });
 
 let activeConnections: ActiveConnections = {};
+console.log('activeConnections', activeConnections)
 let activeGames: ActiveGames  = {};
+console.log('activeGames', activeGames)
 
 wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
   if (req.user && req.user.username) {
+    console.log('username sent with connection request', req.user.username)
     ws.username = req.user.username;
     activeConnections[ws.username] = ws;
   }
-
-  ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
+  console.log('activeConnection username right after connection', ws.username)
+  ws.send(JSON.stringify({ message: `Connected to WebSocket server as ${ws.username}` }));
 
   ws.on('message', (message) => {
+    console.log(`Received message from ${ws.username}: ${message}`);
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
     if (data.type === 'game-invite') {
@@ -173,7 +175,12 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     }
   });
 
-  ws.on('close', () => {
+  ws.on('error', (error) => {
+    console.error(`WebSocket error with user ${ws.username}:`, error);
+  });
+
+  ws.on('close', (code, reason) => {
+    console.log(`Client disconnected: ${ws.username}, Code: ${code}, Reason: ${reason}`);
     if (ws.username) {
       delete activeConnections[ws.username];
     }
