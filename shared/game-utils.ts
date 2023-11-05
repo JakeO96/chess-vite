@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const grid: string[][] = [
   ['A7', 'A6', 'A5', 'A4', 'A3', 'A2', 'A1', 'A0'],
   ['B7', 'B6', 'B5', 'B4', 'B3', 'B2', 'B1', 'B0'],
@@ -11,12 +10,14 @@ export const grid: string[][] = [
 ];
 
 export class Player {
+  className: string;
   name: string;
   color: string;
   alive: Piece[];
   grave: Piece[];
 
-  constructor(name: string = '', color: string = '', alive: Piece[] = [], grave: Piece[] = []) {
+  constructor(className: string = 'Player', name: string = '', color: string = '', alive: Piece[] = [], grave: Piece[] = []) {
+    this.className = className
     this.name = name;
     this.color = color;
     this.alive = alive;
@@ -25,7 +26,7 @@ export class Player {
 
   toJSON() {
     return {
-      className: this.constructor.name,
+      className: this.className,
       name: this.name,
       color: this.color,
       alive: this.alive.map(piece => piece.toJSON()),
@@ -33,9 +34,9 @@ export class Player {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static fromJSON(json: any) {
     const player = new Player();
+    player.className = json.className;
     player.name = json.name;
     player.color = json.color;
     player.alive = json.alive.map((pieceJson: any) => Piece.fromJSON(pieceJson));
@@ -46,6 +47,7 @@ export class Player {
 
 export class Piece {
   constructor(
+    public pieceType: string,
     public pieceName: string,
     public position: string,
     public moved: boolean,
@@ -56,7 +58,7 @@ export class Piece {
 
   toJSON() {
     return {
-      className: this.constructor.name,
+      className: this.pieceType,
       pieceName: this.pieceName,
       position: this.position,
       moved: this.moved,
@@ -144,6 +146,7 @@ export class Piece {
 }
 
 export class Pawn extends Piece {
+  pieceType = 'Pawn'
   validPawnMoves(grid: string[][], state: any, col: number, row: number): string[] {
     const all_moves: string[] = [];
     // Check the color of the pawn to decide which direction it should move
@@ -188,9 +191,10 @@ export class Pawn extends Piece {
   }
 }
 
-export class Rook extends Piece {}
+export class Rook extends Piece { pieceType = 'Rook' }
 
 export class Knight extends Piece {
+  pieceType = 'Knight'
   validKnightMoves(grid: string[][], state: any, col: number, row: number): string[] {
     const allMoves: string[] = [];
     
@@ -216,12 +220,12 @@ export class Knight extends Piece {
   }
 }
 
-export class Bishop extends Piece {
-}
+export class Bishop extends Piece { pieceType = 'Bishop' }
 
-export class Queen extends Piece {}
+export class Queen extends Piece { pieceType = 'Queen' }
 
 export class King extends Piece {
+  pieceType = 'King'
   validKingMoves(grid: string[][], state: any, col: number, row: number): string[] {
     const cords = [
       [col, (row + 1)],
@@ -258,17 +262,17 @@ export class PieceFactory {
   createPiece(pieceType: string, pieceName: string, position: string, moved: boolean, playerName: string, playerColor: string, isWhite: boolean) {
       switch (pieceType) {
           case 'Pawn':
-              return new Pawn(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new Pawn(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           case 'Rook':
-              return new Rook(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new Rook(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           case 'Knight':
-              return new Knight(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new Knight(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           case 'Bishop':
-              return new Bishop(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new Bishop(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           case 'Queen':
-              return new Queen(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new Queen(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           case 'King':
-              return new King(pieceName, position, moved, playerName, playerColor, isWhite);
+              return new King(pieceType, pieceName, position, moved, playerName, playerColor, isWhite);
           default:
               throw new Error(`Invalid piece type: ${pieceType}`);
       }
