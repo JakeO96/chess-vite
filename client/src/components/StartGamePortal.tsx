@@ -33,6 +33,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   }, [expressApi]);
 
   useEffect(() => {
+    console.log('useEffect that handles websocket messages rendering')
     function handleIncomingData(data: StartGameMessageObject) {
       if (data.type === 'game-invite') {
         console.log(data.challenger)
