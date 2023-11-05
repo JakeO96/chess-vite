@@ -1,5 +1,5 @@
 import type { RecordCheckResponse } from "../components/FormFields";
-const SERVER_API_URL= 'http://localhost:3001/api'
+const SERVER_API_URL= '/api'
 
 enum fetchMethods {
   POST = 'POST',
