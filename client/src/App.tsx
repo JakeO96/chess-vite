@@ -1,10 +1,9 @@
 import {
-  BrowserRouter,
-  Route,
-  Routes
+  createBrowserRouter,
+  RouterProvider,
+  Outlet
 } from 'react-router-dom';
 
-import HomePage from './pages/HomePage';
 import { LogInPage } from './pages/LogInPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { DashboardPage } from './pages/UserDashboardPage';
@@ -13,41 +12,59 @@ import { NewUserRedirectToLogin } from './pages/NewUserRedirectVerifyEmail';
 import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import ExpressAPI from './api/express-api';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { MainHeader } from './components/MainHeader';
+import { ErrorPage } from './pages/ErrorPage';
+import HomePage from './pages/HomePage';
+import ExpressAPI from './api/express-api';
 
 const expressApi: ExpressAPI = new ExpressAPI();
+
+const router = createBrowserRouter([
+  {
+    path: "/", 
+    Component: Root,
+    errorElement: <ErrorPage />,
+    children: [
+      {path: '/', Component: HomePage},
+      {path: "login", Component: LogInPage},
+      {path: "register", element: <RegisterPage expressApi={expressApi} />},
+      {path: "new-user-redirect-to-login", Component: NewUserRedirectToLogin},
+      {
+        path: "dashboard", 
+        element: (
+          <ProtectedRoute>
+            <DashboardPage expressApi={expressApi} />
+          </ProtectedRoute>) 
+      },
+      {
+        path: "game/:gameId",
+        element: (
+          <ProtectedRoute>
+            <ActiveGamePage />
+          </ProtectedRoute>
+        )
+      }
+    ] 
+  },
+])
+
+function Root() {
+  return (
+    <div className="max-w-[1920px] mx-auto bg-noct-black min-h-screen">
+      <MainHeader />
+      <Outlet />
+    </div>
+  )
+}
 
 function App() {
   return (
     <AuthProvider expressApi={expressApi}>
       <DndProvider backend={HTML5Backend}>
         <GameProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path='/' element={<HomePage />} />
-              <Route path='login' element={<LogInPage />} />
-              <Route path='register' element={<RegisterPage expressApi={expressApi} />} />
-              <Route path='new-user-redirect-to-login' element={<NewUserRedirectToLogin />} />
-              <Route 
-                path='dashboard' 
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage expressApi={expressApi} />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path='game/:gameId' 
-                element={
-                  <ProtectedRoute>
-                    <ActiveGamePage />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </BrowserRouter>
+          <RouterProvider router={router} />
         </GameProvider>
       </DndProvider>
     </AuthProvider>

@@ -10,16 +10,15 @@ export default {
       'noct-blue': '#2C87BE',
       'noct-orange': '#DEA956',
       'noct-black': '#222426',
-      'noct-gray': '#66696B',
+      'noct-gray': {
+        100: '#333435',
+        200: '#47494a',
+        300: '#5b5e60',
+        400: '#707375 ',
+        500: '#66696B', // base color
+        600: '#84888b', // Darker shade
+      },
       'noct-white': '#E7ECF1',
-    },
-    screens: {
-      'sm': '640px',
-      'md': '768px',
-      'lg': '993.3333px',
-      'xl': '1280px',
-      '2xl': '1536px',
-      'max': '1920px',
     },
     fontFamily: {
       'termina': ['"Termina"', 'sans-serif'],
@@ -30,9 +29,8 @@ export default {
       },
       boxShadow: {
         'in-around': 'inset 0 4px 12px 0 rgb(0 0 0 / 0.05)',
-        'out-around': '0 4px 12px 0 rgb(0 0 0 / 0.05)'
-      },
-      backgroundImage: {
+        'out-around': '0 4px 12px 0 rgb(0 0 0 / 0.05)',
+        'custom': '0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06)', // Custom light shadow for dark backgrounds
       },
       width: {
         'square': '4rem',

@@ -67,341 +67,129 @@
 
 // ################################################################################################################################
 
-/**
- * 
- * import React, { useState, useEffect } from 'react';
+// THE LAST STARTGAMEPORTAL THAT WORKS
 
-export type GenericOnChange = (obj: { name: string; value: string; error?: string | undefined }) => void
-type PlainFormFieldOnChange = (obj: { name: string; value: string; }) => void
-type OptionalGenericOnChange = GenericOnChange | PlainFormFieldOnChange;
+/** 
+import { FC, useContext, useEffect, useState } from "react"
+import ExpressAPI from "../api/express-api";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { GameContext, StartGameMessageObject } from "../context/GameContext";
+import { ReadyState } from "react-use-websocket";
+import { Player } from "../utils/game-utils";
 
-type PlainFormFieldProps = {
-  placeholder?: string;
-  name: string;
-  type: string;
-  value: string;
-  onChange: OptionalGenericOnChange;
-  styles: string;
-  required: boolean;
-  handleBlur?: (evt: React.FocusEvent<HTMLInputElement>) => void;
-};
-
-type ValidateFormFieldProps = PlainFormFieldProps & {
-  validate: (value: string) => string | undefined;
-  onChange: OptionalGenericOnChange;
-};
-
-
-type ServerConnectedFormFieldProps = PlainFormFieldProps & {
-  validate: (value: string) => string | undefined;
-  onChange: OptionalGenericOnChange;
-  serverFunction: (fieldName: string, value: string) => Promise<RecordCheckResponse>;
-};
-
-export interface RecordCheckResponse extends Response {
-  exists: boolean;
+interface StartGamePortalProps {
+  expressApi: ExpressAPI;
 }
 
-const PlainFormField: React.FC<PlainFormFieldProps> = ({ 
-  placeholder, 
-  name, 
-  type, 
-  value, 
-  onChange, 
-  styles, 
-  required,
-  handleBlur
-}) => {
-  const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-    onChange({ name: evt.target.name, value });
-  };
+export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
-  return (
-    <div className="w-full">
-      <div className="flex">
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder || ''}
-          value={value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          className={styles}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.placeholder = ""}
-        />
-        {required ? <span className='text-noct-orange text-2xl pl-1'>*</span> : <div className='ml-2 pl-1'></div>}
-      </div>
-    </div>
-  );
-}
-
-// ### Check input with a validate function
-const withValidation = (BaseComponent: React.FC<PlainFormFieldProps>) => {
-  return ({ validate, onChange, ...props }: ValidateFormFieldProps) => {
-    const [value, setValue] = useState(props.value)
-    const [error, setError] = useState<string | undefined>(undefined)
-    const enhancedOnChange = useEnhancedOnChange(onChange, validate)
-
-    useEffect(() => {
-      if (error) {
-       setError(error)
-      }
-    }, [error]);
-
-    return <BaseComponent {...props} value={value} onChange={enhancedOnChange} />
-  }
-}
-// ### Check input with the server
-const withExpressApiCall = (BaseComponent: React.FC<PlainFormFieldProps>) => {
-  return ({ validate, onChange, serverFunction, ...props }: ServerConnectedFormFieldProps) => {
-    const [value, setValue] = useState(props.value)
-    const [error, setError] = useState<string | undefined>(undefined)
-    const enhancedOnChange = useEnhancedOnChange(onChange, validate)
-
-    const handleBlur = async (evt: React.FocusEvent<HTMLInputElement>) => {
-      const value = evt.target.value;
-      const name = evt.target.name;
-      let error = validate ? validate(value) : undefined;
-      if(!value){
-        return;
-      }
-      await serverFunction(name, value)
-        .then(async (data: RecordCheckResponse) => {
-          if (data.exists) {
-            setValue(value);
-            error = `${name} already in use`;
-            setError(error);
-            onChange({name, value, error})
-          } else {
-            error = undefined
-            setValue(value);
-            setError(error);
-            onChange({name, value, error})
-          }
-        })
-    }
-
-    return <BaseComponent {...props} value={value} onChange={enhancedOnChange} handleBlur={handleBlur} />
-  }
-}
-
-const useEnhancedOnChange = (onChange: OptionalGenericOnChange, validate?: Function) => {
-   // Inner function to handle the event
-   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-    const error = validate ? validate(value) : undefined;
-
-    if (typeof onChange === 'function') {
-      (onChange as GenericOnChange)({ name: evt.target.name, value, error });
-    }
-  }
-
-  // Wrapper function to transform the function type
-  const wrapperFunction: OptionalGenericOnChange = (obj: any) => {
-    handleChange({
-      target: {
-        name: obj.name,
-        value: obj.value,
-      },
-    } as React.ChangeEvent<HTMLInputElement>);
-  }
-
-  return wrapperFunction
-};
-
-const ExpressApiCallFormField = withExpressApiCall(PlainFormField)
-const ValidateFormField = withValidation(PlainFormField)
-export { PlainFormField, ValidateFormField, ExpressApiCallFormField }
- */
-
-type PlainFormFieldOnChange = (obj: { name: string, value: string }) => void;
-type ValidateFormFieldOnChange = (obj: { name: string, value: string, error: string | undefined }) => void;
-
-type PlainFormFieldProps = {
-  placeholder?: string;
-  name: string;
-  type: string;
-  value: string;
-  onChange: PlainFormFieldOnChange
-  styles: string;
-  required: boolean;
-};
-
-export interface RecordCheckResponse extends Response {
-  exists: boolean;
-}
-
-const PlainFormField: React.FC<PlainFormFieldProps> = ({ 
-  placeholder, 
-  name, 
-  type, 
-  value: propsValue, 
-  onChange, 
-  styles, 
-  required,
-}) => {
-  const { value, handleChange } = useFormField(propsValue, onChange);
-
-  return (
-    <div className="w-full">
-      <div className="flex">
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder || ''}
-          value={value}
-          onChange={handleChange}
-          className={styles}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.placeholder = ""}
-        />
-        {required ? <span className='text-noct-orange text-2xl pl-1'>*</span> : <div className='ml-2 pl-1'></div>}
-      </div>
-    </div>
-  );
-}
-
-// ### Check input with a validate function
-type ValidateFormFieldProps = {
-  placeholder?: string;
-  name: string;
-  type: string;
-  value: string;
-  validate: (value: string) => string | undefined;
-  onChange: ValidateFormFieldOnChange
-  styles: string;
-  required: boolean;
-};
-
-const ValidateFormField: React.FC<ValidateFormFieldProps> = ({ 
-  placeholder, 
-  name, 
-  type, 
-  value: propsValue, 
-  validate,
-  onChange, 
-  styles, 
-  required,
-}) => {
-  const { value, error, handleChange } = useFormField(propsValue, onChange, validate);
-
-  return (
-    <div className="w-full">
-      <span className="text-noct-orange">{error}</span>
-      <div className="flex">
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder || ''}
-          value={value}
-          onChange={handleChange}
-          className={styles}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.placeholder = ""}
-        />
-        {required ? <span className='text-noct-orange text-2xl pl-1'>*</span> : <div className='ml-2 pl-1'></div>}
-      </div>
-    </div>
-  );
-}
-
-// ### Check input with the server
-
-type ServerConnectedFormFieldProps = {
-  placeholder?: string;
-  name: string;
-  type: string;
-  value: string;
-  validate: (value: string) => string | undefined;
-  onChange: (obj: {name: string, value: string, error: string | undefined}) => void;
-  styles: string;
-  serverFunction: (fieldName: string, value: string) => Promise<RecordCheckResponse>;
-  required: boolean;
-};
-
-const ServerConnectedFormField: React.FC<ServerConnectedFormFieldProps> = ({ 
-  placeholder, 
-  name, 
-  type, 
-  value: propsValue, 
-  validate, 
-  onChange, 
-  styles, 
-  serverFunction, 
-  required,
-}) => {
-  const { value, error, handleChange, handleBlur } = useFormField(propsValue, onChange, validate, serverFunction);
-
-  return (
-    <div className="w-full">
-      <span className="text-noct-orange">{error}</span>
-      <div className="flex">
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder || ''}
-          value={value}
-          onChange={handleChange}
-          className={styles}
-          onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.placeholder = ""}
-          onBlur={handleBlur}
-        />
-        {required ? <span className='text-noct-orange text-2xl pl-1'>*</span> : <div className='ml-2 pl-1'></div>}
-      </div>
-    </div>
-  );
-}
-
-// ### Abstract common logic shared from FormField components
-
-const useFormField = (
-  propsValue: string,
-  onChange: PlainFormFieldOnChange | ValidateFormFieldOnChange,
-  validate?: (arg: string) => string | undefined,
-  serverFunction?: (fieldName: string, value: string) => Promise<RecordCheckResponse>
-) => {
-  const [value, setValue] = useState(propsValue);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [navigateReady, setNavigateReady] = useState<boolean>(false);
+  const [users, setUsers] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { currentClientUsername } = useContext(AuthContext)
+  const { challenger, opponent, gameId, setGameId, setChallenger, setOpponent, sendMessage, lastMessage, readyState, initiatePlayers } = useContext(GameContext)
 
   useEffect(() => {
-    setValue(propsValue);
-  }, [propsValue]);
-
-  const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-    const error = validate ? validate(value) : undefined;
-
-    setValue(value);
-    setError(error);
-
-    onChange({name: evt.target.name, value, error});
-  };
-
-  const handleBlur = async (evt: React.FocusEvent<HTMLInputElement>) => {
-    if (!serverFunction) return;
-
-    const value = evt.target.value;
-    const name = evt.target.name;
-    let error = validate ? validate(value) : undefined;
-    if(!value){
-      return;
-    }
-    await serverFunction(name, value)
-      .then(async (data: RecordCheckResponse) => {
-        if (data.exists) {
-          setValue(value);
-          error = `${name} already in use`;
-          setError(error);
-          onChange({name, value, error})
-        } else {
-          error = undefined
-          setValue(value);
-          setError(error);
-          onChange({name, value, error})
-        }
+    expressApi.getLoggedInUsers()
+      .then((res: Response) =>  res.json() )
+      .then((data) => {
+        setUsers(data);
+        setIsLoading(false);
       })
-  };
+      .catch((err) => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  }, [expressApi]);
 
-  return { value, error, handleChange, handleBlur };
-};
+  useEffect(() => {
+    console.log('useEffect that handles websocket messages rendering')
+    function handleIncomingData(data: StartGameMessageObject) {
+      if (data.type === 'game-invite') {
+        console.log(data.challenger)
+        console.log(data.opponent)
+        const deserializedChallenger = Player.fromJSON(data.challenger);
+        const accepted = window.confirm(`You have been invited to a game by ${deserializedChallenger.name}. Do you accept?`);
+        const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, challenger: data.challenger, opponent: data.opponent });
+        sendMessage(responseMessage);
+      } else if (data.type === 'create-game') {
+        expressApi.createGame(data, ((gameId) => {
+          const responseMessage = JSON.stringify({ type: 'game-created', challenger: data.challenger, opponent: data.opponent, gameId: gameId})
+          sendMessage(responseMessage);
+        }))
+      } else if (data.type === 'start-game') {
+        const deserializedOpponent = Player.fromJSON(data.opponent);
+        const deserializedChallenger = Player.fromJSON(data.challenger);
+        console.log('challenger in StartGamePortal start-game response vvv')
+        console.log(deserializedChallenger)
+        console.log('opponent in StartGamePortal start-game response vvv')
+        console.log(deserializedOpponent)
+        setChallenger(deserializedChallenger);
+        setOpponent(deserializedOpponent);
+        if (data.gameId) {
+          setGameId(data.gameId);
+        }
+        setNavigateReady(true);
+      } else if (data.type === 'game-decline') {
+        alert(`${data.initiatingUser} declined to start a game.`);
+      }
+    }
 
-export { PlainFormField, ValidateFormField, ServerConnectedFormField }
+    if (lastMessage !== null) {
+      if (lastMessage.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            const data = JSON.parse(reader.result);
+            handleIncomingData(data);
+          }
+        };
+        reader.readAsText(lastMessage.data);
+      } else {
+        const data = JSON.parse(lastMessage.data);
+        handleIncomingData(data);
+      }
+    }
+  }, [lastMessage, expressApi, sendMessage, setGameId, setChallenger, setOpponent, currentClientUsername, challenger, opponent]);
+
+  const handleUsernameClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    const opponentUsername = evt.currentTarget.dataset.username;
+    const [initializedChallenger, initializedOpponent] = opponentUsername ? initiatePlayers(currentClientUsername, opponentUsername) : [null, null]
+    if (initializedChallenger && initializedOpponent) {
+      const jsonChallenger = initializedChallenger.toJSON();
+      const jsonOpponent = initializedOpponent.toJSON();
+      const message = JSON.stringify({ type: 'game-invite', challenger: jsonChallenger, opponent: jsonOpponent });
+      sendMessage(message);
+    }
+  }
+
+  return (
+    <>
+      {
+      navigateReady ? (
+        <Navigate to={`/game/${gameId}`} />
+      ) :  isLoading ? (
+          <p>Loading...</p>
+        ) : users.length > 0 ? (
+          <ul>
+            {users.map((username, index) => (
+              <li key={index}>
+                <button 
+                  disabled={readyState !== ReadyState.OPEN} 
+                  data-username={username} 
+                  onClick={handleUsernameClick}>
+                  {username}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No users are currently logged in.</p>
+        )
+      }
+    </>
+  )
+}
+
+*/

@@ -1,8 +1,5 @@
-import MainLayout from "../components/MainLayout";
-
 export default function HomePage() {
   return (
-    <MainLayout>
       <header>
         <h1>
           TO LOGIN
@@ -15,6 +12,5 @@ export default function HomePage() {
           Log In
         </a>
       </header>
-    </MainLayout>
   );
 }

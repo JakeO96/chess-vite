@@ -1,10 +1,10 @@
 import { FC, useContext, useEffect, useState } from "react"
 import ExpressAPI from "../api/express-api";
-import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { GameContext, StartGameMessageObject } from "../context/GameContext";
-import { ReadyState } from "react-use-websocket";
 import { Player } from "../utils/game-utils";
+import { UserList } from './UserList'
+import { Navigate } from "react-router";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -12,25 +12,14 @@ interface StartGamePortalProps {
 
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
-  const [navigateReady, setNavigateReady] = useState<boolean>(false);
   const [users, setUsers] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [usernameSendInviteTo, setUsernameSendInviteTo] = useState<string>('')
+  const [selectUsernameMessage, setSelectUsernameMessage] = useState<boolean>(false)
+  const [disableInvite, setDisableInvite] = useState<boolean>(true)
+  const [navigateReady, setNavigateReady] = useState<boolean>(false)
+  const [playerListOpen, setPlayerListOpen] = useState<boolean>(false)
   const { currentClientUsername } = useContext(AuthContext)
-  const { challenger, opponent, gameId, setGameId, setChallenger, setOpponent, sendMessage, lastMessage, readyState, initiatePlayers } = useContext(GameContext)
-
-  useEffect(() => {
-    console.log('getLoggedInUsers firing in StartGamePortal')
-    expressApi.getLoggedInUsers()
-      .then((res: Response) =>  res.json() )
-      .then((data) => {
-        setUsers(data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsLoading(false);
-      });
-  }, [expressApi]);
+  const { challenger, opponent, gameId, setGameId, setChallenger, setOpponent, sendMessage, lastMessage, initiatePlayers } = useContext(GameContext)
 
   useEffect(() => {
     console.log('useEffect that handles websocket messages rendering')
@@ -82,9 +71,33 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     }
   }, [lastMessage, expressApi, sendMessage, setGameId, setChallenger, setOpponent, currentClientUsername, challenger, opponent]);
 
+  const handleFindGameClick = () => {
+    expressApi.getLoggedInUsers()
+    .then((res: Response) =>  res.json() )
+    .then((data) => {
+      setUsers(data);
+      setPlayerListOpen(true)
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }
+
   const handleUsernameClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
     const opponentUsername = evt.currentTarget.dataset.username;
-    const [initializedChallenger, initializedOpponent] = opponentUsername ? initiatePlayers(currentClientUsername, opponentUsername) : [null, null]
+    if (opponentUsername) {
+      setSelectUsernameMessage(false)
+      setUsernameSendInviteTo(opponentUsername)
+    }
+    setDisableInvite(false)
+  }
+
+  const handleSendInviteClick = () => {
+    if (usernameSendInviteTo === '') {
+      setSelectUsernameMessage(true)
+      return
+    }
+    const [initializedChallenger, initializedOpponent] = usernameSendInviteTo ? initiatePlayers(currentClientUsername, usernameSendInviteTo) : [null, null]
     if (initializedChallenger && initializedOpponent) {
       const jsonChallenger = initializedChallenger.toJSON();
       const jsonOpponent = initializedOpponent.toJSON();
@@ -96,26 +109,30 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   return (
     <>
       {
-      navigateReady ? (
-        <Navigate to={`/game/${gameId}`} />
-      ) :  isLoading ? (
-          <p>Loading...</p>
-        ) : users.length > 0 ? (
-          <ul>
-            {users.map((username, index) => (
-              <li key={index}>
-                <button 
-                  disabled={readyState !== ReadyState.OPEN} 
-                  data-username={username} 
-                  onClick={handleUsernameClick}>
-                  {username}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No users are currently logged in.</p>
-        )
+        navigateReady ?  (
+          <Navigate to={`/game/${gameId}`} />
+        ) :
+          playerListOpen ? (
+            <div className="flex flex-col justify-center items-center">
+              <UserList users={users} handleUsernameClick={handleUsernameClick} selectedUsername={usernameSendInviteTo} />
+              <button 
+                onClick={handleSendInviteClick}
+                className={`w-32 mt-2 py-1 px-2 rounded font-semibold transition duration-150 ease-in-out 
+                          ${disableInvite ? 'bg-noct-gray-100 opacity-80 text-noct-gray-600 border' : 'bg-noct-gray-500 text-noct-black hover:bg-noct-gray-600 border-2 border-noct-white'}`}
+              >
+                Send Invite
+              </button>
+              {selectUsernameMessage ? (
+                <p className="text-noct-orange">Select a username from the list above</p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="w-full flex justify-center">
+              <button onClick={handleFindGameClick} className="bg-noct-gray-500 py-1 px-2 rounded font-semibold transition duration-150 ease-in-out hover:scale-95" >
+                Find a game 
+              </button>
+            </div>
+          )
       }
     </>
   )
