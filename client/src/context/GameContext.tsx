@@ -60,14 +60,19 @@ type GameProviderProps = {
 
 const produceInitialGameState = () => {
   let cordCount = 0;
-  const newGameState: GameState = {board: {}, isWhiteTurn: true, moves: []};
+  const newGameState: GameState = {
+    board: {}, 
+    isWhiteTurn: true, 
+    moves: [],
+  }
+  
   for (const col of grid) {
     for (const cord of col) {
-      newGameState.board[cord] = [null, cordCount];
+      newGameState.board[cord] = [null, cordCount]
     }
-    cordCount += 1;
+    cordCount += 1
   }
-  return newGameState;
+  return newGameState
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {

@@ -155,24 +155,34 @@ export class Pawn extends Piece {
     if (state[grid[col][nextRow]][0] === null) {
       all_moves.push(grid[col][nextRow]);
     }
-    
-    if ((col-1) >= 0 && (col+1) <= 7) {
-      const attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
-      for (const coord of attacks) {
-        const spotPiece = state[coord][0];
-        if (spotPiece === null) {
-            continue;
-        } else if (spotPiece.isWhite) {
+
+    if (col-1 >= 0) {
+      const leftAttackSquare = grid[col-1][nextRow]
+      const attackPiece = state[leftAttackSquare][0]
+      if (attackPiece !== null) {
+        if (attackPiece.isWhite) {
           if (this.playerColor === 'black') {
-            all_moves.push(coord);
-          } else {
-            continue;
+            all_moves.push(leftAttackSquare)
           }
-        } else if (!spotPiece.isWhite) {
+        } else if (!attackPiece.isWhite) {
           if (this.playerColor === 'white') {
-            all_moves.push(coord);
-          } else {
-            continue;
+            all_moves.push(leftAttackSquare)
+          }
+        }
+      }
+    }
+
+    if (col+1 <= 7) {
+      const rightAttackSquare = grid[col+1][nextRow]
+      const attackPiece = state[rightAttackSquare][0]
+      if (attackPiece !== null) {
+        if (attackPiece.isWhite) {
+          if (this.playerColor === 'black') {
+            all_moves.push(rightAttackSquare)
+          }
+        } else if (!attackPiece.isWhite) {
+          if (this.playerColor === 'white') {
+            all_moves.push(rightAttackSquare)
           }
         }
       }
@@ -191,7 +201,13 @@ export class Pawn extends Piece {
   }
 }
 
-export class Rook extends Piece { pieceType = 'Rook' }
+export class Rook extends Piece { 
+  pieceType = 'Rook' 
+  validRookMoves(grid: string[][], board: any, col: number, row: number): string[] {
+    return this.get_all_straight(grid, board, col, row)
+  }
+
+}
 
 export class Knight extends Piece {
   pieceType = 'Knight'
@@ -220,9 +236,20 @@ export class Knight extends Piece {
   }
 }
 
-export class Bishop extends Piece { pieceType = 'Bishop' }
+export class Bishop extends Piece { 
+  pieceType = 'Bishop'
+  validBishopMoves(grid: string[][], board: any, col: number, row: number): string[] {
+    return this.get_all_diagonal(grid, board, col, row)
+  }
+}
 
-export class Queen extends Piece { pieceType = 'Queen' }
+export class Queen extends Piece { 
+  pieceType = 'Queen'
+  validQueenMoves(grid: string[][], board: any, col: number, row: number): string[] {
+    return this.get_all_straight(grid, board, col, row)
+    .concat(this.get_all_diagonal(grid, board, col, row));
+  }
+}
 
 export class King extends Piece {
   pieceType = 'King'

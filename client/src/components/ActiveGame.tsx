@@ -261,21 +261,22 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
   }
 
   const process_move = (start: string, end: string): MoveResult => {
+    // create copy board so we are not mutating the original state
     const copyState = {...gameState as GameState};
     if (copyState.board) {
       const startPosition = start[0] + start[1];
       const endPosition = end[0] + end[1];
       const startCol = copyState.board[startPosition][1];
       const startRow = 7 - parseInt(startPosition[1]);
-    
+      
+      //get the piece being moved
       const piece = copyState.board[startPosition][0];
       // check if piece belongs to white, check the isWhite property of the piece to make sure it is a white piece white is dragging
-      //against if it is white's turn to move. 
+      //if it is white's turn to move. 
       if (piece) {
         if (piece.isWhite !== copyState.isWhiteTurn) {
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
-        console.log(currentClientUsername)
         if (piece.playerName !== currentClientUsername){
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
@@ -289,20 +290,18 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       } else if (piece instanceof Knight) {
           allMoves = piece.validKnightMoves(grid, board, startCol, startRow);
       } else if (piece instanceof Rook) {
-          allMoves = piece.get_all_straight(grid, board, startCol, startRow);
+          allMoves = piece.validRookMoves(grid, board, startCol, startRow);
       } else if (piece instanceof Bishop) {
-          allMoves = piece.get_all_diagonal(grid, board, startCol, startRow);
+          allMoves = piece.validBishopMoves(grid, board, startCol, startRow);
       } else if (piece instanceof Queen) {
-          allMoves = piece.get_all_straight(grid, board, startCol, startRow)
-              .concat(piece.get_all_diagonal(grid, board, startCol, startRow));
+          allMoves = piece.validQueenMoves(grid, board, startCol, startRow)
       } else if (piece instanceof King) {
           allMoves = piece.validKingMoves(grid, board, startCol, startRow);
       }
       
       let didCapture = false;
-      if (allMoves.includes(endPosition)) {
-        // if the piece moving is taking an opponents piece
-        if (board[endPosition][0] !== null) {
+      if (allMoves.includes(endPosition)) { //make sure the position being moved to is valid
+        if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
           didCapture = true;
           const endSpotpiece = board[endPosition][0];
           // update the alive and grave list for player losing a piece
@@ -321,6 +320,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         if (piece) {
           const move = convertMoveToAlgebraic(piece, end, didCapture)
           copyState.moves.push(move)
+
         }
     
         // update the positions of the pieces on the board
@@ -356,7 +356,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
 
   const [, dropRef] = useDrop({
     accept: 'piece',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drop: (item: any) => {
       if (item) {
         const start = item.piece.position; 

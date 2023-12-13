@@ -193,3 +193,27 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 }
 
 */
+
+/**
+ *     if ((col-1) >= 0 && (col+1) <= 7) {
+      const attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
+      for (const coord of attacks) {
+        const spotPiece = state[coord][0];
+        if (spotPiece === null) {
+            continue;
+        } else if (spotPiece.isWhite) {
+          if (this.playerColor === 'black') {
+            all_moves.push(coord);
+          } else {
+            continue;
+          }
+        } else if (!spotPiece.isWhite) {
+          if (this.playerColor === 'white') {
+            all_moves.push(coord);
+          } else {
+            continue;
+          }
+        }
+      }
+    }
+ */
