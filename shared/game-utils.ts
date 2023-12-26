@@ -58,7 +58,7 @@ export class Piece {
 
   toJSON() {
     return {
-      className: this.pieceType,
+      pieceType: this.pieceType,
       pieceName: this.pieceName,
       position: this.position,
       moved: this.moved,
@@ -71,7 +71,7 @@ export class Piece {
   static fromJSON(json: any) {
     const pieceFactory = new PieceFactory();
     const piece = pieceFactory.createPiece(
-        json.className,
+        json.pieceType,
         json.pieceName,
         json.position,
         json.moved,
@@ -80,7 +80,7 @@ export class Piece {
         json.isWhite
     );
     return piece;
-}
+  }
   
   get_all_diagonal(grid: string[][], state: any, col: number, row: number): string[] {
     let all_moves: string[] = [];
@@ -98,7 +98,7 @@ export class Piece {
     all_moves = all_moves.concat(this.recurse_straight((col + 1), 8, row, grid, state, [], 'hor'));
     all_moves = all_moves.concat(this.recurse_straight((col - 1), -1, row, grid, state, [], 'hor'));
     return all_moves;
-}
+  }
 
   recurse_straight(looper: number, end: number, anchor: number, grid: string[][], state: any, all_moves: string[], axis: string): string[] {
     if (looper === end) {
@@ -151,6 +151,11 @@ export class Pawn extends Piece {
     const all_moves: string[] = [];
     // Check the color of the pawn to decide which direction it should move
     let nextRow = this.isWhite ? row - 1 : row + 1;
+
+    // Check if the pawn is on the last row for promotion
+    if (nextRow < 0 || nextRow > 7) {
+      return all_moves;
+    }
 
     if (state[grid[col][nextRow]][0] === null) {
       all_moves.push(grid[col][nextRow]);

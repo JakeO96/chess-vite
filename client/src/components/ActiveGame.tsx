@@ -36,6 +36,7 @@ function deserializeMoveMadeResponse(data: MoveMadeResponse): [GameState, Player
   return [deserializedNewGameState, deserializedNewChallenger, deserializedNewOpponent]
 }
 
+
 export const ActiveGame: React.FC<object> = () => {
 
   const { 
@@ -49,29 +50,6 @@ export const ActiveGame: React.FC<object> = () => {
     lastMessage 
   } = useContext(GameContext);
 
-  const setPiecesOnBoard = useCallback(() => {
-    if (challenger && opponent && gameState) {
-      const allPieces = challenger.alive.concat(opponent.alive);
-      const allPositions = allPieces.map(p => p.position);
-      const newGameState = {...gameState};
-      for (const spot in newGameState.board) {
-        if (allPositions.includes(spot)) {
-          for (const p of allPieces) {
-            if (p.position === spot) {
-              if (newGameState.board) newGameState.board[spot][0] = p;
-            }
-          }
-        }
-      }
-      setGameState(newGameState);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [challenger, opponent]);
-
-  useEffect(() => {
-    setPiecesOnBoard();
-  }, [setPiecesOnBoard]);
-
   useEffect(() => {
     function handleIncomingData(data: MoveMadeResponse) {
       if (data.type === 'move-made') {
@@ -80,7 +58,7 @@ export const ActiveGame: React.FC<object> = () => {
           deserializedNewChallenger, 
           deserializedNewOpponent
         ] = deserializeMoveMadeResponse(data);
-
+        console.log('move-made websocket message firing')
         setChallenger(deserializedNewChallenger);
         setOpponent(deserializedNewOpponent);
         setGameState(deserializedNewGameState);
@@ -206,7 +184,7 @@ export const ActiveGame: React.FC<object> = () => {
     </div>
 
     <div className='flex justify-center mt-2'>
-      {displayWhitePlayerName()}
+      { displayWhitePlayerName() }
     </div>
     </>
   );
@@ -260,95 +238,126 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
     return move.trim(); // Ensure no extra whitespace
   }
 
-  const process_move = (start: string, end: string): MoveResult => {
+  const processMove = (startPosition: string, endPosition: string): MoveResult => {
     // create copy board so we are not mutating the original state
     const copyState = {...gameState as GameState};
     if (copyState.board) {
-      const startPosition = start[0] + start[1];
-      const endPosition = end[0] + end[1];
-      const startCol = copyState.board[startPosition][1];
-      const startRow = 7 - parseInt(startPosition[1]);
-      
       //get the piece being moved
       const piece = copyState.board[startPosition][0];
       // check if piece belongs to white, check the isWhite property of the piece to make sure it is a white piece white is dragging
       //if it is white's turn to move. 
       if (piece) {
         if (piece.isWhite !== copyState.isWhiteTurn) {
+          console.log('returning invalid because state thinks its still whites turn')
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
         if (piece.playerName !== currentClientUsername){
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
-      }
 
-      const board = copyState.board;
-      let allMoves: string[] = [];
-      // find what kind of piece we are moving
-      if (piece instanceof Pawn) {
-          allMoves = piece.validPawnMoves(grid, board, startCol, startRow);
-      } else if (piece instanceof Knight) {
-          allMoves = piece.validKnightMoves(grid, board, startCol, startRow);
-      } else if (piece instanceof Rook) {
-          allMoves = piece.validRookMoves(grid, board, startCol, startRow);
-      } else if (piece instanceof Bishop) {
-          allMoves = piece.validBishopMoves(grid, board, startCol, startRow);
-      } else if (piece instanceof Queen) {
-          allMoves = piece.validQueenMoves(grid, board, startCol, startRow)
-      } else if (piece instanceof King) {
-          allMoves = piece.validKingMoves(grid, board, startCol, startRow);
-      }
-      
-      let didCapture = false;
-      if (allMoves.includes(endPosition)) { //make sure the position being moved to is valid
-        if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
-          didCapture = true;
-          const endSpotpiece = board[endPosition][0];
-          // update the alive and grave list for player losing a piece
-          if (endSpotpiece && challenger && opponent) {
-            if (challenger.alive.includes(endSpotpiece)) {
-              challenger.grave.push(endSpotpiece);
-              challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
-            } else {
-              opponent.grave.push(endSpotpiece);
-              opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
-            }
-          }
-        }
-
-
-        if (piece) {
-          const move = convertMoveToAlgebraic(piece, end, didCapture)
-          copyState.moves.push(move)
-
-        }
-    
-        // update the positions of the pieces on the board
-        board[endPosition][0] = board[startPosition][0];
-        board[startPosition][0] = null;
-        if (board[endPosition][0] !== null) {
-          const piece = board[endPosition][0];
-          if (piece && challenger && opponent) {
-            piece.position = endPosition;
-            if (challenger.name === piece.playerName) {
-              challenger.alive.forEach((p) => {
-                  if (p.position === startPosition) {
-                      p.position = endPosition;
-                  }
-              });
-            } else {
-              opponent.alive.forEach((p) => {
-                if (p.position === startPosition) {
-                    p.position = endPosition;
+        const board = copyState.board;
+        
+        let didCapture = false;
+        if (piece.playerColor === 'white') {
+          if (copyState.allValidWhiteMoves[startPosition].includes(endPosition)) { //make sure the position being moved to is valid
+            if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
+              didCapture = true;
+              const endSpotpiece = board[endPosition][0];
+              // update the alive and grave list for player losing a piece
+              if (endSpotpiece && challenger && opponent) {
+                if (challenger.alive.includes(endSpotpiece)) {
+                  challenger.grave.push(endSpotpiece);
+                  challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
+                } else {
+                  opponent.grave.push(endSpotpiece);
+                  opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
                 }
-              });
+              }
             }
+    
+            const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
+            copyState.moves.push(move)  
+        
+            // update the positions of the pieces on the board
+            board[endPosition][0] = board[startPosition][0];
+            board[startPosition][0] = null;
+            if (board[endPosition][0] !== null) {
+              const piece = board[endPosition][0];
+              if (piece && challenger && opponent) {
+                piece.position = endPosition;
+                if (challenger.name === piece.playerName) {
+                  challenger.alive.forEach((p) => {
+                      if (p.position === startPosition) {
+                          p.position = endPosition;
+                      }
+                  });
+                } else {
+                  opponent.alive.forEach((p) => {
+                    if (p.position === startPosition) {
+                        p.position = endPosition;
+                    }
+                  });
+                }
+              }
+            }
+          } else {
+            console.log('returning invalid because move not in allmoves for white')
+            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
           }
         }
-      } else {
-        return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
+        if (piece.playerColor === 'black') {
+          console.log('checking all blak moves')
+          if (copyState.allValidBlackMoves[startPosition].includes(endPosition)) { //make sure the position being moved to is valid
+            if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
+              didCapture = true;
+              const endSpotpiece = board[endPosition][0];
+              // update the alive and grave list for player losing a piece
+              if (endSpotpiece && challenger && opponent) {
+                if (challenger.alive.includes(endSpotpiece)) {
+                  challenger.grave.push(endSpotpiece);
+                  challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
+                } else {
+                  opponent.grave.push(endSpotpiece);
+                  opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
+                }
+              }
+            }
+    
+            if (piece) {
+              const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
+              copyState.moves.push(move)  
+            }
+        
+            // update the positions of the pieces on the board
+            board[endPosition][0] = board[startPosition][0];
+            board[startPosition][0] = null;
+            if (board[endPosition][0] !== null) {
+              const piece = board[endPosition][0];
+              if (piece && challenger && opponent) {
+                piece.position = endPosition;
+                if (challenger.name === piece.playerName) {
+                  challenger.alive.forEach((p) => {
+                      if (p.position === startPosition) {
+                          p.position = endPosition;
+                      }
+                  });
+                } else {
+                  opponent.alive.forEach((p) => {
+                    if (p.position === startPosition) {
+                        p.position = endPosition;
+                    }
+                  });
+                }
+              }
+            }
+          } else {
+            console.log('returning invalid because move not in allmoves black')
+            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
+          }
+        } 
       }
     }
+    console.log(copyState.board)
     const newTurn = copyState.isWhiteTurn ? false : true;
     copyState.isWhiteTurn = newTurn;
     return { isValid: true, newState: copyState, newChallenger: challenger, newOpponent: opponent };
@@ -356,13 +365,12 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
 
   const [, dropRef] = useDrop({
     accept: 'piece',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drop: (item: any) => {
       if (item) {
         const start = item.piece.position; 
-        const end = position;
+        const end = position; //position prop of the square being dropped on
         if (challenger && opponent) {
-          const moveResult = process_move(start, end);
+          const moveResult = processMove(start, end);
           if (moveResult.isValid) {
             if (moveResult.newChallenger && moveResult.newOpponent) {
               item.piece.moved = true;

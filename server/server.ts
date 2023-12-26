@@ -9,7 +9,7 @@ import cookieParser from 'cookie-parser';
 import WebSocket from 'ws';
 import http, { IncomingMessage} from 'http';
 import jwt from 'jsonwebtoken';
-import { Player } from '../shared/game-utils';
+import { Player, Piece, Pawn, Knight, Rook, Bishop, Queen, King, grid } from '../shared/game-utils';
 import dotenv from 'dotenv-safe';
 dotenv.config();
 
@@ -105,7 +105,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
   ws.send(JSON.stringify({ message: `Connected to WebSocket server as ${ws.username}` }));
 
   ws.on('message', (message) => {
-    console.log(`Received message from ${ws.username}: ${message}`);
+    //console.log(`Received message from ${ws.username}: ${message}`);
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
     if (data.type === 'game-invite') {
@@ -160,11 +160,44 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       if (ws.username) {
         if (activeGames[data.gameId]) {
           const [challenger, opponent] = activeGames[data.gameId];
+          let gameState = data.newGameState
+          let gameChallenger = data.newChallenger
+          let gameOpponent = data.newOpponent
+          
+          //get all valid moves for all pieces on the board
+          const allPieces = gameChallenger.alive.concat(gameOpponent.alive)
+          const board = gameState.board
+          for (const piece of allPieces) {
+            const restoredPiece = Piece.fromJSON(piece)
+            let validPieceMoves: string[] = []
+            const position = piece.position
+            const startCol = board[position][1]
+            const startRow = 7 - parseInt(position[1]);
+            if (restoredPiece instanceof Pawn) {
+              validPieceMoves = restoredPiece.validPawnMoves(grid, board, startCol, startRow);
+            } else if (restoredPiece instanceof Knight) {
+                validPieceMoves = restoredPiece.validKnightMoves(grid, board, startCol, startRow);
+            } else if (restoredPiece instanceof Rook) {
+                validPieceMoves = restoredPiece.validRookMoves(grid, board, startCol, startRow);
+            } else if (restoredPiece instanceof Bishop) {
+                validPieceMoves = restoredPiece.validBishopMoves(grid, board, startCol, startRow);
+            } else if (restoredPiece instanceof Queen) {
+                validPieceMoves = restoredPiece.validQueenMoves(grid, board, startCol, startRow)
+            } else if (restoredPiece instanceof King) {
+                validPieceMoves = restoredPiece.validKingMoves(grid, board, startCol, startRow);
+            }
+            if (piece.playerColor === 'black') {
+              gameState.allValidBlackMoves[position] = validPieceMoves
+            } else {
+              gameState.allValidWhiteMoves[position] = validPieceMoves
+            }
+          } 
+
           const newMessage = JSON.stringify({
             type: 'move-made', 
-            newGameState: data.newGameState, 
-            newChallenger: data.newChallenger, 
-            newOpponent: data.newOpponent
+            newGameState: gameState, 
+            newChallenger: gameChallenger, 
+            newOpponent: gameOpponent
           })
           const challengerClientSocket = activeConnections[challenger.name];
           const opponenetClientSocket = activeConnections[opponent.name];

@@ -22,6 +22,14 @@ export interface GameState {
   };
   isWhiteTurn: boolean;
   moves: string[];
+  whiteKingMoved: boolean,
+  blackKingMoved: boolean,
+  allValidBlackMoves: {
+    [key: string]: string[]
+  },
+  allValidWhiteMoves: {
+    [key: string]: string[]
+  }
 }
 
 type GameContextType = {
@@ -44,10 +52,10 @@ export const GameContext = createContext<GameContextType>({
   opponent: undefined,
   gameId: '',
   gameState: undefined,
-  setGameId: () => { },
-  setChallenger: () => { },
-  setOpponent: () => { },
-  setGameState: () => { },
+  setGameId: () => {},
+  setChallenger: () => {},
+  setOpponent: () => {},
+  setGameState: () => {},
   sendMessage: () => {},  // default function
   lastMessage: null,
   readyState: ReadyState.UNINSTANTIATED,
@@ -64,6 +72,10 @@ const produceInitialGameState = () => {
     board: {}, 
     isWhiteTurn: true, 
     moves: [],
+    whiteKingMoved: false,
+    blackKingMoved: false,
+    allValidBlackMoves: {},
+    allValidWhiteMoves: {}
   }
   
   for (const col of grid) {
@@ -105,7 +117,6 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   
   useEffect(() => {
     if (isLoggedIn) {
-      console.log('the useEffect to set socketUrl firing')
       setSocketUrl(DEV_WS_URL);
     }
   }, [isLoggedIn]);
