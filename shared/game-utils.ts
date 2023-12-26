@@ -201,6 +201,9 @@ export class Pawn extends Piece {
         all_moves.push(grid[col][nextRow]);
       }
     }
+
+    console.log(all_moves)
+    console.log(this.moved)
     
     return all_moves;
   }

@@ -338,3 +338,103 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
             }
           }
           */
+
+/**
+ * if (piece.playerColor === 'white') {
+          if (copyState.allValidWhiteMoves[startPosition].includes(endPosition)) { //make sure the position being moved to is valid
+            if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
+              didCapture = true;
+              const endSpotpiece = board[endPosition][0];
+              // update the alive and grave list for player losing a piece
+              if (endSpotpiece && challenger && opponent) {
+                if (challenger.alive.includes(endSpotpiece)) {
+                  challenger.grave.push(endSpotpiece);
+                  challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
+                } else {
+                  opponent.grave.push(endSpotpiece);
+                  opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
+                }
+              }
+            }
+    
+            const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
+            copyState.moves.push(move)  
+        
+            // update the positions of the pieces on the board
+            board[endPosition][0] = board[startPosition][0];
+            board[startPosition][0] = null;
+            if (board[endPosition][0] !== null) {
+              const piece = board[endPosition][0];
+              if (piece && challenger && opponent) {
+                piece.position = endPosition;
+                if (challenger.name === piece.playerName) {
+                  challenger.alive.forEach((p) => {
+                      if (p.position === startPosition) {
+                          p.position = endPosition;
+                      }
+                  });
+                } else {
+                  opponent.alive.forEach((p) => {
+                    if (p.position === startPosition) {
+                        p.position = endPosition;
+                    }
+                  });
+                }
+              }
+            }
+          } else {
+            console.log('returning invalid because move not in allmoves for white')
+            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent }
+          }
+        }
+        if (piece.playerColor === 'black') {
+          console.log('checking all blak moves')
+          if (copyState.allValidBlackMoves[startPosition].includes(endPosition)) { //make sure the position being moved to is valid
+            if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
+              didCapture = true;
+              const endSpotpiece = board[endPosition][0];
+              // update the alive and grave list for player losing a piece
+              if (endSpotpiece && challenger && opponent) {
+                if (challenger.alive.includes(endSpotpiece)) {
+                  challenger.grave.push(endSpotpiece);
+                  challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
+                } else {
+                  opponent.grave.push(endSpotpiece);
+                  opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
+                }
+              }
+            }
+    
+            if (piece) {
+              const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
+              copyState.moves.push(move)  
+            }
+        
+            // update the positions of the pieces on the board
+            board[endPosition][0] = board[startPosition][0];
+            board[startPosition][0] = null;
+            if (board[endPosition][0] !== null) {
+              const piece = board[endPosition][0];
+              if (piece && challenger && opponent) {
+                piece.position = endPosition;
+                if (challenger.name === piece.playerName) {
+                  challenger.alive.forEach((p) => {
+                      if (p.position === startPosition) {
+                          p.position = endPosition;
+                      }
+                  });
+                } else {
+                  opponent.alive.forEach((p) => {
+                    if (p.position === startPosition) {
+                        p.position = endPosition;
+                    }
+                  });
+                }
+              }
+            }
+          } else {
+            console.log('returning invalid because move not in allmoves black')
+            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
+          }
+        }
+ */
