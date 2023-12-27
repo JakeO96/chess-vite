@@ -267,6 +267,11 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           }
         }
 
+        if (!piece.moved) {
+          piece.moved = true
+          console.log('piece moved being switched to true')
+        }
+
         let didCapture = false;
         if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
           didCapture = true;
@@ -285,10 +290,9 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           }
         }
 
-        if (piece) {
-          const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
-          copyState.moves.push(move)  
-        }
+
+        const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
+        copyState.moves.push(move)  
     
         // update the positions of the pieces on the board
         board[endPosition][0] = board[startPosition][0];
@@ -311,7 +315,8 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
               });
             }
           }
-        } 
+        }
+
       }
     }
     const newTurn = copyState.isWhiteTurn ? false : true;
@@ -329,7 +334,8 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           const moveResult = processMove(start, end);
           if (moveResult.isValid) {
             if (moveResult.newChallenger && moveResult.newOpponent) {
-              item.piece.moved = true;
+              //item.piece.moved = true;
+              //console.log(`piece being marked as moved ${item.piece.moved}`)
               const jsonNewChallenger = moveResult.newChallenger.toJSON();
               const jsonNewOpponent = moveResult.newOpponent.toJSON();
               const message = JSON.stringify({

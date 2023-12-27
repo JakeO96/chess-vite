@@ -167,6 +167,8 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
           //get all valid moves for all pieces on the board
           const allPieces = gameChallenger.alive.concat(gameOpponent.alive)
           const board = gameState.board
+          // console.log(board)
+          console.log ('######## valid-move firing ##################################################')
           for (const piece of allPieces) {
             const restoredPiece = Piece.fromJSON(piece)
             let validPieceMoves: string[] = []
@@ -174,6 +176,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
             const startCol = board[position][1]
             const startRow = 7 - parseInt(position[1]);
             if (restoredPiece instanceof Pawn) {
+              console.log(restoredPiece)
               validPieceMoves = restoredPiece.validPawnMoves(grid, board, startCol, startRow);
             } else if (restoredPiece instanceof Knight) {
                 validPieceMoves = restoredPiece.validKnightMoves(grid, board, startCol, startRow);
