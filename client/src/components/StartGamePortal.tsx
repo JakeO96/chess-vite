@@ -80,9 +80,9 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
               newGameState.allValidWhiteMoves[position] = validPieceMoves
             }
           }
-          console.log(newGameState.allValidBlackMoves)
-          console.log('black moves above white moves below ----------------------------------')
-          console.log(newGameState.allValidWhiteMoves)
+          //console.log(newGameState.allValidBlackMoves)
+          //console.log('black moves above white moves below ----------------------------------')
+          //console.log(newGameState.allValidWhiteMoves)
           setGameState(newGameState) 
         }
         setChallenger(deserializedChallenger);

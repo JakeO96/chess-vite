@@ -57,7 +57,6 @@ export const ActiveGame: React.FC<object> = () => {
           deserializedNewChallenger, 
           deserializedNewOpponent
         ] = deserializeMoveMadeResponse(data);
-        console.log('move-made websocket message firing')
         setChallenger(deserializedNewChallenger);
         setOpponent(deserializedNewOpponent);
         setGameState(deserializedNewGameState);
@@ -248,15 +247,11 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       //if it is white's turn to move. 
       if (piece) {
         if (piece.isWhite !== copyState.isWhiteTurn) {
-          console.log('returning invalid because state thinks its still whites turn')
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
         if (piece.playerName !== currentClientUsername){
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
-
-        const board = copyState.board;
-
         if (piece.playerColor === 'white') {
           if (!copyState.allValidWhiteMoves[startPosition].includes(endPosition)) {
             return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent }
@@ -267,11 +262,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           }
         }
 
-        if (!piece.moved) {
-          piece.moved = true
-          console.log('piece moved being switched to true')
-        }
-
+        const board = copyState.board;
         let didCapture = false;
         if (board[endPosition][0] !== null) { //there is a piece where the mover is dropping
           didCapture = true;
@@ -279,18 +270,15 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           // update the alive and grave list for player losing a piece
           if (endSpotpiece && challenger && opponent) {
             if (challenger.name === endSpotpiece.playerName) {
-              console.log(`grave being pushed`, challenger)
               challenger.grave.push(endSpotpiece);
-              challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
+              challenger.alive = challenger.alive.filter(item => item.position !== endSpotpiece.position);
             } else {
-              console.log(`grave being pushed`, opponent)
               opponent.grave.push(endSpotpiece);
-              opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
+              opponent.alive = opponent.alive.filter(item => item.position !== endSpotpiece.position);
             }
           }
         }
-
-
+        
         const move = convertMoveToAlgebraic(piece, endPosition, didCapture)
         copyState.moves.push(move)  
     
@@ -300,20 +288,39 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         if (board[endPosition][0] !== null) {
           const piece = board[endPosition][0];
           if (piece && challenger && opponent) {
-            piece.position = endPosition;
+            //console.log('challenger name', challenger.name)
+            //console.log('piece playerName', piece.playerName)
+            //console.log('opponent name', opponent.name)
             if (challenger.name === piece.playerName) {
+              console.log('before for each')
               challenger.alive.forEach((p) => {
+                  //console.log('piece position', p.position)
+                  //console.log('startPosition', startPosition)
                   if (p.position === startPosition) {
                       p.position = endPosition;
+                      console.log('just before move check')
+                      if (!p.moved) {
+                        console.log('piece being marked moved')
+                        p.moved = true
+                      }
                   }
               });
-            } else {
+            } else if (opponent.name === piece.playerName) {
+              console.log('before for each')
               opponent.alive.forEach((p) => {
+                //console.log('piece position', p.position)
+                //console.log('startPosition', startPosition)
                 if (p.position === startPosition) {
                     p.position = endPosition;
+                    console.log('just before move check')
+                    if (!p.moved) {
+                      console.log('piece being marked moved')
+                      p.moved = true
+                    }
                 }
               });
             }
+            piece.position = endPosition;
           }
         }
 
@@ -334,8 +341,6 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           const moveResult = processMove(start, end);
           if (moveResult.isValid) {
             if (moveResult.newChallenger && moveResult.newOpponent) {
-              //item.piece.moved = true;
-              //console.log(`piece being marked as moved ${item.piece.moved}`)
               const jsonNewChallenger = moveResult.newChallenger.toJSON();
               const jsonNewOpponent = moveResult.newOpponent.toJSON();
               const message = JSON.stringify({
